@@ -14,6 +14,23 @@ app = FastAPI()
 SECRET_KEY = "553cc129ab9cf6247fab2db3550cb90d9822d8bae257b1f87fc401e521d561b5"
 PASSWORD_SALT = "a67c233beafd397502a538f97c190a6cef74bdef41add1910d2457af1e792b62"
 
+#123456
+#87654321
+
+users = {
+    "denis@user.com":{
+        "name": "Denis",
+        "password": "c39d0d4f1df48e1501389ea0d03272f84a41153e540549ef2cb07004347ac011",
+        "balans": 100_000
+    },
+    "mark@user.com":{
+        "name": "Mark",
+        "password": "c7cf47fd10f9f90ecf10d2219903366b6e0fd328a67f06190c202a5f55a2ef7e",
+        "balans": 200_000
+    }
+}
+
+
 def sign_data(data: str) -> str:
     """Возвращает подписанные данные data"""
     return hmac.new(
@@ -32,24 +49,10 @@ def get_username_from_signed_string(user_name_signed: str) -> Optional[str]:
         return username
 
 
-def verify_password(username: str, password: str) -> bool:
+def verify_password(user: str, password: str) -> bool:
     password_hash = hashlib.sha256((password + PASSWORD_SALT).encode()).hexdigest().lower()
-    password_hash_store = users[username]["password"].lower()
+    password_hash_store = user['password'].lower()
     return  password_hash == password_hash_store
-
-
-users = {
-    "denis@user.com":{
-        "name": "Denis",
-        "password": "553cc129ab9cf6247fab2db3550cb90d9822d8bae257b1f87fc401e521d561b5",#123456
-        "balans": 100_000
-    },
-    "mark@user.com":{
-        "name": "Mark",
-        "password": "a67c233beafd397502a538f97c190a6cef74bdef41add1910d2457af1e792b62",#87654321
-        "balans": 200_000
-    }
-}
 
 
 @app.get("/")
@@ -74,9 +77,6 @@ def index_page(username: Optional[str] = Cookie(default=None)):
 @app.post("/login")
 def process_login_page(username: str = Form(...), password: str = Form(...)):
     user = users.get(username)
-    print("user is ", user)
-    print("password is ", password)
-    
     if not user or not verify_password(user, password):
         return Response(f"{username}, я Вас не знаю!", media_type="text/html")
 
